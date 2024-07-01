@@ -38,7 +38,7 @@ As a ready probe, we touch /tmp/healthy periodically and if we enter a fail stat
 - URL: openshift-ingress-canary.apps.<yourcluster>.<yourdomain> # predefined route that your cluster will serve (`oc get route -n openshift-ingress`) we will use to confirm ingress is working
 	 (is defined in the canary-pod-deployment.yaml)
 - LOCALPORT=8888 # predefined port that will be exposed on the host for a call to the URI address `<IP-of-infra-node>:8888/healthz/ready`
-     (note that this is defined/inherited from the canary-pod-deployment.yaml, but is currently hard-coded into the nginx)
+     (note that this is defined/inherited from the canary-pod-deployment.yaml, but is currently hard-coded into the nginx deployment in `nginx.conf` and `default.conf` which are injected via configmap)
 - nginx.conf: Defines the exposed LOCALPORT for the pod and the URI path to be called by the application
      (this is managed in the configmap yaml)
 
@@ -47,5 +47,9 @@ As a ready probe, we touch /tmp/healthy periodically and if we enter a fail stat
 1. Clone or fork this repository so you can manage your own versions
 2. Review the code base and change the `URL` and `LOCALPORT` (As applicable)
 3. Ensure that you have adequate port access to the designated localport and permission to create a hostNetworked pod on your infra nodes (or test nodes)
-4. Modify the canary-pod-deployment.yaml to include a NodeSelector value that matches your infra hosts to ensure you scope these pods to nodes where router-default pods are running.
-4. run the deploy.sh to create the necessary assets and scale up the deployment to the desired host node level
+4. Modify the `canary-pod-deployment.yaml` to include a NodeSelector value that matches your infra hosts to ensure you scope these pods to nodes where router-default pods are running.
+4. run the `deploy.sh` to create the necessary assets and scale up the deployment to the desired host node level
+
+`deploy.sh` will label your nodes with `router-canary=true` if they are running a router-* pod at time of creation (unless you append the flag `--testing` which assumes you've pre-labeled nodes).
+Then it will create the configmaps for `nginx.conf` and `default.conf` and scale up the deployment with 1 replica. (You'll need to manually increase the replica count, or convert to a daemonset).
+
