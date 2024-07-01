@@ -22,12 +22,8 @@
 #expected response:
 CODE=200
 #port exposed on nginx container
-LOCALPORT=8888
-#url to check:
-#TODO: change URL to dynamic detect on /etc/resolv.conf output injected domain for canary-openshift-ingress-canary.apps.*${domain}
-#CHANGE THIS URL TO MATCH YOUR CLUSTER'S CANARY ROUTE: `oc get route -n openshift-ingress-canary`
-URL=canary-openshift-ingress-canary.apps.shrocp4upi412ovn.lab.upshift.rdu2.redhat.com
-#TEST_ROUTE is defined in canary-pod-deployment.yaml as an env var
+#LOCALPORT=8888 is now defined in canary-pod-deployment.yaml
+#URL to check $(URL) is defined in canary-pod-deployment.yaml
 
 #OPTIONS is necessary to pull the response_code value for the script
 OPTIONS='HTTP Code: %{http_code}\n'
@@ -77,7 +73,7 @@ done
 expose_healthpath () {
 #this function starts nginx which makes our target URI accessible once the script gets the desired result back.
     exec nginx -g "daemon off;" &
-    sleep 5 #allow time for nginx to start
+    sleep 5 #allow time for nginx to start 
     healthprobe #call ongoing self-check loop to ensure routes stay up
 }
 

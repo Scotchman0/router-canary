@@ -4,9 +4,8 @@
 set -e
 
 # set variables
-IMAGE_TAG=canary-pod:latest
-#set NGINX_PORT
-NGINX_PORT="8888"
+#IMAGE_TAG=canary-pod:latest
+IMAGE_TAG=canary-pod-testing:latest
 
 podman build . -t ${IMAGE_TAG}
 

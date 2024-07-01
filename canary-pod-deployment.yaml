@@ -1,7 +1,8 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: canary-pod
+  name: canary-pod-test
   namespace: openshift-ingress
 spec:
   minReadySeconds: 30
@@ -23,13 +24,13 @@ spec:
     spec:
       containers:
       - env:
-        - name: NGXINX_PORT
+        - name: LOCALPORT
           value: "8888"
-        - name: TEST_ROUTE
+        - name: URL
           value: "canary-openshift-ingress-canary.apps.shrocp4upi413ovn.lab.psi.pnq2.redhat.com"
         - name: READY_URI
           value: "/healthz/ready"
-        image: "quay.io/rhn_support_wrussell/canary-pod:latest"
+        image: "quay.io/rhn_support_wrussell/canary-pod-testing:latest"
         imagePullPolicy: Always
         livenessProbe: #set to check a file exists
           exec:
@@ -74,13 +75,26 @@ spec:
           periodSeconds: 1
           successThreshold: 1
           timeoutSeconds: 1
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        - name: default-config
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: FallbackToLogsOnError
       dnsPolicy: ClusterFirstWithHostNet
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: canary-nginx-config
+        - name: default-config
+          configMap:
+            name: canary-default-config
       hostNetwork: true
       nodeSelector:
-        kubernetes.io/os: linux
-        node-role.kubernetes.io/worker: ""
+        router-canary: "true"
       priorityClassName: system-cluster-critical
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -88,3 +102,4 @@ spec:
       terminationGracePeriodSeconds: 60
       serviceAccount: router
       serviceAccountName: router
+...

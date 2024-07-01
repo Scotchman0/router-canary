@@ -28,10 +28,19 @@ after nginx starts, call secondary health function (liveness) to confirm that th
 liveness will also call the localhost function to ensure router-pods remain up.
 if a failure occurs at either route remove file "healthy" from /tmp/ which is how kubelet will be validating the node is available
 
-# Variables that need to be defined in the script:
+# Variables that need to be changed/defined in the script:
 
 - URL: openshift-ingress-canary.apps.<yourcluster>.<yourdomain> # predefined route that your cluster will serve (`oc get route -n openshift-ingress`) we will use to confirm ingress is working
-	(defined in canary-pod.sh, and is referenced in the canary-pod-deployment.yaml but is not explicitly called here)
+	 (is defined in the canary-pod-deployment.yaml)
 - LOCALPORT=8888 # predefined port that will be exposed on the host for a call to the URI address `<IP-of-infra-node>:8888/healthz/ready`
-	(defined in canary-pod.sh, and in default.conf + nginx.conf. It is also specified in the deployment, but is not referenced from there explicitly in the code logic)
+     (note that this is defined/inherited from the canary-pod-deployment.yaml, but is currently hard-coded into the nginx)
+- nginx.conf: Defines the exposed LOCALPORT for the pod and the URI path to be called by the application
+     (this is managed in the configmap yaml)
 
+# How to implement a test for this repository:
+
+1. Clone or fork this repository so you can manage your own versions
+2. Review the code base and change the `URL` and `LOCALPORT` (As applicable)
+3. Ensure that you have adequate port access to the designated localport and permission to create a hostNetworked pod on your infra nodes (or test nodes)
+4. Modify the canary-pod-deployment.yaml to include a NodeSelector value that matches your infra hosts to ensure you scope these pods to nodes where router-default pods are running.
+4. run the deploy.sh to create the necessary assets and scale up the deployment to the desired host node level
