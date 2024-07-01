@@ -28,6 +28,11 @@ after nginx starts, call secondary health function (liveness) to confirm that th
 liveness will also call the localhost function to ensure router-pods remain up.
 if a failure occurs at either route remove file "healthy" from /tmp/ which is how kubelet will be validating the node is available
 
+The canary-pod will run through `canary-pod.sh` to check first that the router pod is up, then it will start it's own local `nginx` service which will expose 
+`<IP-of-host-node>:8888/healthz/ready` . This address will be the target URI that the NLB should call to confirm that the host node is ready to recieve traffic at `443/80`
+Nginx is ONLY active so long as the router pod curls within the canary-pod succeed, and the localhost calls to the local nginx service succeed (otherwise, nginx is stopped)
+As a ready probe, we touch /tmp/healthy periodically and if we enter a fail state (local healthprobe fails or router resolution fails) we stop nginx and delete the health file.
+
 # Variables that need to be changed/defined in the script:
 
 - URL: openshift-ingress-canary.apps.<yourcluster>.<yourdomain> # predefined route that your cluster will serve (`oc get route -n openshift-ingress`) we will use to confirm ingress is working
