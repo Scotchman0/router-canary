@@ -5,7 +5,7 @@ set -e
 
 # set variables
 #IMAGE_TAG=canary-pod:latest
-IMAGE_TAG=canary-pod-testing:latest
+IMAGE_TAG=canary-pod:latest
 
 podman build . -t ${IMAGE_TAG}
 

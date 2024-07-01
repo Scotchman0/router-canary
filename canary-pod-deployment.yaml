@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: canary-pod-test
+  name: canary-pod
   namespace: openshift-ingress
 spec:
   minReadySeconds: 30
